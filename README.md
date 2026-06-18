@@ -24,14 +24,14 @@ that, changes are live.
 {
   "default": "/path/to/wallpaper.jpg",
   "monitors": {
-    "DP-1":   { "file": "/path/to/left.jpg",  "mode": "zoom" },
-    "HDMI-1": { "file": "/path/to/right.jpg", "mode": "zoom" }
+    "DP-1":   { "file": "/path/to/left.jpg"  },
+    "HDMI-1": { "file": "/path/to/right.jpg" }
   }
 }
 ```
 
 - `default` is painted on any monitor not listed in `monitors`.
-- Keys are mutter connector names (`gnome-monitor-config list`, or `xrandr`-style names).
-- `mode` is currently always `zoom` (cover/crop).
+- Keys are mutter connector names (e.g. `DP-1`, `HDMI-1`, `eDP-1`).
+- Images are always scaled `zoom` (cover/crop); scaling is not configurable.
 
 Any tool can write this file automatically; you can also edit it by hand.
