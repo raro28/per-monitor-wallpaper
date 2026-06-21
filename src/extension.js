@@ -130,8 +130,14 @@ export default class PerMonitorWallpaperExtension extends Extension {
         if (!background)
             return;
         const assign = () => {
-            if (epoch === this._applyEpoch && bg.backgroundActor)
-                bg.backgroundActor.content.background = background;
+            if (epoch !== this._applyEpoch || !bg.backgroundActor)
+                return;
+            bg.backgroundActor.content.background = background;
+            // Secondary monitors are created hidden at startup and shown only by
+            // layoutManager._showSecondaryBackgrounds(); a gsettings-driven actor
+            // swap can land a still-hidden replacement after that runs, leaving the
+            // monitor unpainted (moving windows smear). We own this actor — show it.
+            bg.backgroundActor.show();
         };
         const image = Meta.BackgroundImageCache.get_default().load(Gio.File.new_for_path(file));
         if (image.is_loaded()) {
