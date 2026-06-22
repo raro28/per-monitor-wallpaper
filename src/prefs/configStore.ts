@@ -55,6 +55,7 @@ export class ConfigStore {
   }
 
   watch(onChange: () => void): void {
+    this.stop();
     const dir = Gio.File.new_for_path(this.configDir);
     this.monitor = dir.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, null);
     this.monitor.connect('changed', (_m, f, other) => {
