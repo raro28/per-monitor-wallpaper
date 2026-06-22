@@ -43,21 +43,16 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
     arrRow.set_child(arrangement);
     group.add(arrRow);
 
-    // Default tile (monitor-agnostic; no reset).
-    const defaultTile = new MonitorTile('', 'Default', cache, { resettable: false });
-    const defaultRow = new Adw.ActionRow({ title: 'Default wallpaper' });
-    defaultRow.add_suffix(defaultTile);
-    group.add(defaultRow);
-
     page.add(group);
     window.add(page);
+    window.set_resizable(false);
 
     const tiles = new Map<string, MonitorTile>();
 
     const rebuildTiles = (): void => {
       tiles.clear();
       for (const { connector, label } of model.connectors()) {
-        const tile = new MonitorTile(connector, label, cache, { resettable: true });
+        const tile = new MonitorTile(connector, label, cache);
         tile.onPick((c) => this.pick(window, (file) => { store.setMonitor(c, file, this.currentMode(store, c)); }));
         tile.onMode((c, m) => {
           const cfg = store.read();
@@ -65,7 +60,6 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
           if (!file) return; // nothing to attach a mode to yet
           store.setMonitor(c, file, m);
         });
-        tile.onReset((c) => store.clearMonitor(c));
         tiles.set(connector, tile);
       }
     };
@@ -78,20 +72,10 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
     const refresh = (): void => {
       const cfg = store.read();
       const def = normalizeDefault(cfg);
-      defaultTile.setEntry(def?.file ?? null, def?.mode ?? 'zoom', false);
-      defaultTile.onPick(() => this.pick(window, (file) => {
-        const d = normalizeDefault(store.read());
-        store.setDefault(file, d?.mode ?? 'zoom');
-      }));
-      defaultTile.onMode((_c, m) => {
-        const d = normalizeDefault(store.read());
-        if (!d) return; // no default image yet — nothing to attach a mode to
-        store.setDefault(d.file, m);
-      });
       for (const [connector, tile] of tiles) {
         const e = entryForConnector(cfg, connector);
-        if (e) tile.setEntry(e.file, e.mode, false);
-        else tile.setEntry(def?.file ?? null, def?.mode ?? 'zoom', true);
+        if (e) tile.setEntry(e.file, e.mode);
+        else tile.setEntry(def?.file ?? null, def?.mode ?? 'zoom');
       }
       placeTiles();
     };

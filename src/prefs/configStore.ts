@@ -1,7 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import {
-  parseConfig, setMonitorEntry, clearMonitorEntry, setDefault, type Config,
+  parseConfig, setMonitorEntry, type Config,
 } from '../lib/config.js';
 import type { Mode } from '../lib/mode.js';
 
@@ -44,14 +44,6 @@ export class ConfigStore {
 
   setMonitor(connector: string, file: string, mode: Mode): void {
     this.write(setMonitorEntry(this.read(), connector, file, mode));
-  }
-
-  clearMonitor(connector: string): void {
-    this.write(clearMonitorEntry(this.read(), connector));
-  }
-
-  setDefault(file: string, mode: Mode): void {
-    this.write(setDefault(this.read(), file, mode));
   }
 
   watch(onChange: () => void): void {

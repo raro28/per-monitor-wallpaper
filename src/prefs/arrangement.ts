@@ -12,22 +12,27 @@ export const ArrangementView = GObject.registerClass(
       this.set_hexpand(true);
     }
 
-    /** Place each tile at its computed rect. Tiles from a previous render are removed first. */
     render(arrangement: Arrangement, tiles: Map<string, MonitorTile>): void {
-      let child = this.get_first_child();
-      while (child) {
-        const next = child.get_next_sibling();
-        this.remove(child);
-        child = next;
-      }
+      const wanted = new Set<MonitorTile>();
       for (const placed of arrangement.tiles) {
         const tile = tiles.get(placed.connector);
         if (!tile) continue;
+        wanted.add(tile);
+        const x = placed.rect.x;
+        const y = placed.rect.y;
         tile.set_size_request(
           Math.max(1, Math.round(placed.rect.width)),
           Math.max(1, Math.round(placed.rect.height)),
         );
-        this.put(tile, placed.rect.x, placed.rect.y);
+        if (tile.get_parent() === this) this.move(tile, x, y);
+        else this.put(tile, x, y);
+      }
+      // Remove only children that are no longer wanted (e.g. after a monitor rebuild).
+      let child = this.get_first_child();
+      while (child) {
+        const next = child.get_next_sibling();
+        if (!(wanted as Set<unknown>).has(child)) this.remove(child);
+        child = next;
       }
     }
   },

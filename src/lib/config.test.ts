@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   parseConfig, normalizeDefault, entryForConnector,
-  setMonitorEntry, clearMonitorEntry, setDefault,
+  setMonitorEntry,
 } from './config.js';
 
 test('parseConfig: valid object', () => {
@@ -47,18 +47,6 @@ test('setMonitorEntry: adds without dropping other keys', () => {
   assert.notEqual(out, c); // new object (no mutation)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assert.equal((c.monitors as any)['DP-1'], undefined); // input untouched
-});
-test('clearMonitorEntry: removes one, keeps rest', () => {
-  const c = { monitors: { 'DP-1': { file: '/a.jpg', mode: 'fit' }, 'HDMI-1': { file: '/b.jpg', mode: 'zoom' } } };
-  const out = clearMonitorEntry(c, 'DP-1');
-  assert.equal(out.monitors!['DP-1'], undefined);
-  assert.deepEqual(out.monitors!['HDMI-1'], { file: '/b.jpg', mode: 'zoom' });
-});
-test('setDefault: object form, preserves monitors', () => {
-  const c = { monitors: { 'DP-1': { file: '/a.jpg', mode: 'zoom' } } };
-  const out = setDefault(c, '/d.jpg', 'center');
-  assert.deepEqual(out.default, { file: '/d.jpg', mode: 'center' });
-  assert.deepEqual(out.monitors!['DP-1'], { file: '/a.jpg', mode: 'zoom' });
 });
 test('entryForConnector: empty-string file -> null', () => {
   assert.equal(entryForConnector({ monitors: { 'DP-1': { file: '', mode: 'fit' } } }, 'DP-1'), null);

@@ -43,8 +43,8 @@ const ThumbnailArea = GObject.registerClass(
   },
 );
 
-// Composite tile: thumbnail + fit-mode chip + optional reset. Gtk.Overlay
-// positions the chip/reset via halign/valign, so no manual child allocation.
+// Composite tile: thumbnail + fit-mode chip. Gtk.Overlay
+// positions the chip via halign/valign, so no manual child allocation.
 export const MonitorTile = GObject.registerClass(
   { GTypeName: 'PmwMonitorTile' },
   class extends Gtk.Overlay {
@@ -52,12 +52,10 @@ export const MonitorTile = GObject.registerClass(
     private cache: ThumbnailCache;
     private area: InstanceType<typeof ThumbnailArea>;
     private chip: Gtk.MenuButton;
-    private resetBtn: Gtk.Button | null = null;
     private pickCb: ((c: string) => void) | null = null;
     private modeCb: ((c: string, m: Mode) => void) | null = null;
-    private resetCb: ((c: string) => void) | null = null;
 
-    constructor(connector: string, label: string, cache: ThumbnailCache, opts?: { resettable?: boolean }) {
+    constructor(connector: string, label: string, cache: ThumbnailCache) {
       super();
       this.connector = connector;
       this.cache = cache;
@@ -95,29 +93,15 @@ export const MonitorTile = GObject.registerClass(
       group.add_action(action);
       this.insert_action_group('tile', group);
 
-      // Reset (top-right overlay) — only on resettable tiles.
-      if (opts?.resettable) {
-        this.resetBtn = new Gtk.Button({
-          icon_name: 'edit-undo-symbolic',
-          halign: Gtk.Align.END,
-          valign: Gtk.Align.START,
-          visible: false,
-        });
-        this.resetBtn.add_css_class('osd');
-        this.resetBtn.connect('clicked', () => this.resetCb?.(this.connector));
-        this.add_overlay(this.resetBtn);
-      }
     }
 
-    setEntry(file: string | null, mode: Mode, inherited: boolean): void {
+    setEntry(file: string | null, mode: Mode): void {
       this.area.setTexture(file ? this.cache.texture(file) : null);
       this.chip.set_label(LABELS[mode]);
-      if (this.resetBtn) this.resetBtn.set_visible(!inherited && file !== null);
     }
 
     onPick(cb: (c: string) => void): void { this.pickCb = cb; }
     onMode(cb: (c: string, m: Mode) => void): void { this.modeCb = cb; }
-    onReset(cb: (c: string) => void): void { this.resetCb = cb; }
   },
 );
 export type MonitorTile = InstanceType<typeof MonitorTile>;

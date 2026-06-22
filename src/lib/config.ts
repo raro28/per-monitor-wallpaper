@@ -50,14 +50,3 @@ export function setMonitorEntry(cfg: Config, connector: string, file: string, mo
   return { ...cfg, monitors: { ...cfg.monitors, [connector]: { file, mode } } };
 }
 
-/** Return a new Config with monitors[connector] removed, other keys preserved. */
-export function clearMonitorEntry(cfg: Config, connector: string): Config {
-  const monitors = { ...cfg.monitors };
-  delete monitors[connector];
-  return { ...cfg, monitors };
-}
-
-/** Return a new Config with default = {file, mode}, monitors preserved. */
-export function setDefault(cfg: Config, file: string, mode: Mode): Config {
-  return { ...cfg, default: { file, mode } };
-}
