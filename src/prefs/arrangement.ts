@@ -24,6 +24,7 @@ export const ArrangementView = GObject.registerClass(
           Math.max(1, Math.round(placed.rect.width)),
           Math.max(1, Math.round(placed.rect.height)),
         );
+        tile.setRenderScale(arrangement.scale); // for faithful 'center' thumbnail rendering
         if (tile.get_parent() === this) this.move(tile, x, y);
         else this.put(tile, x, y);
       }

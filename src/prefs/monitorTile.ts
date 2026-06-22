@@ -17,10 +17,20 @@ const ThumbnailArea = GObject.registerClass(
   { GTypeName: 'PmwThumbnailArea' },
   class extends Gtk.Widget {
     texture: Gdk.Texture | null = null;
+    mode: Mode = 'zoom';
+    renderScale = 1; // monitor-px -> tile-px (from the arrangement); used by 'center'
 
-    setTexture(t: Gdk.Texture | null): void {
+    setContent(t: Gdk.Texture | null, mode: Mode): void {
       this.texture = t;
+      this.mode = mode;
       this.queue_draw();
+    }
+
+    setRenderScale(scale: number): void {
+      if (scale > 0 && scale !== this.renderScale) {
+        this.renderScale = scale;
+        this.queue_draw();
+      }
     }
 
     vfunc_snapshot(snapshot: Gtk.Snapshot): void {
@@ -31,14 +41,38 @@ const ThumbnailArea = GObject.registerClass(
       const rounded = new Gsk.RoundedRect();
       rounded.init_from_rect(rect, 8);
       snapshot.push_rounded_clip(rounded);
+      // Backdrop shows through the letterbox bars for fit/center.
+      const bg = new Gdk.RGBA();
+      bg.parse('rgba(127,127,127,0.25)');
+      snapshot.append_color(bg, rect);
       if (this.texture) {
-        snapshot.append_scaled_texture(this.texture, Gsk.ScalingFilter.TRILINEAR, rect);
-      } else {
-        const c = new Gdk.RGBA();
-        c.parse('rgba(127,127,127,0.25)');
-        snapshot.append_color(c, rect);
+        snapshot.append_scaled_texture(this.texture, Gsk.ScalingFilter.TRILINEAR, this.destRect(w, h));
       }
       snapshot.pop();
+    }
+
+    // Texture destination reproducing the fit-mode. Overflow (zoom/center) is
+    // cropped by the rounded clip; gaps (fit/center) reveal the backdrop.
+    private destRect(w: number, h: number): Graphene.Rect {
+      const tw = this.texture!.get_width();
+      const th = this.texture!.get_height();
+      let dw: number;
+      let dh: number;
+      if (this.mode === 'fill') {
+        dw = w; // stretch to fill
+        dh = h;
+      } else if (this.mode === 'center') {
+        dw = tw * this.renderScale; // native size at the tile's scale
+        dh = th * this.renderScale;
+      } else {
+        const scale =
+          this.mode === 'fit'
+            ? Math.min(w / tw, h / th) // contain (letterbox)
+            : Math.max(w / tw, h / th); // zoom: cover (crop)
+        dw = tw * scale;
+        dh = th * scale;
+      }
+      return new Graphene.Rect().init((w - dw) / 2, (h - dh) / 2, dw, dh);
     }
   },
 );
@@ -96,8 +130,13 @@ export const MonitorTile = GObject.registerClass(
     }
 
     setEntry(file: string | null, mode: Mode): void {
-      this.area.setTexture(file ? this.cache.texture(file) : null);
+      this.area.setContent(file ? this.cache.texture(file) : null, mode);
       this.chip.set_label(LABELS[mode]);
+    }
+
+    /** Monitor-px -> tile-px scale (from the arrangement); used to render 'center' faithfully. */
+    setRenderScale(scale: number): void {
+      this.area.setRenderScale(scale);
     }
 
     onPick(cb: (c: string) => void): void { this.pickCb = cb; }
