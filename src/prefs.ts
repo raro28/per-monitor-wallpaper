@@ -59,10 +59,20 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
       for (const { connector, label } of model.connectors()) {
         const tile = new MonitorTile(connector, label, cache, { resettable: true });
         tile.onPick((c) => this.pick(window, (file) => { store.setMonitor(c, file, this.currentMode(store, c)); }));
-        tile.onMode((c, m) => store.setMonitor(c, this.currentFile(store, c) ?? '', m));
+        tile.onMode((c, m) => {
+          const cfg = store.read();
+          const file = entryForConnector(cfg, c)?.file ?? normalizeDefault(cfg)?.file;
+          if (!file) return; // nothing to attach a mode to yet
+          store.setMonitor(c, file, m);
+        });
         tile.onReset((c) => store.clearMonitor(c));
         tiles.set(connector, tile);
       }
+    };
+
+    const placeTiles = (): void => {
+      const w = arrangement.get_width() || 560; // 0 before first allocation -> fallback
+      arrangement.render(model.arrange(w, 220), tiles);
     };
 
     const refresh = (): void => {
@@ -73,28 +83,29 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
         const d = normalizeDefault(store.read());
         store.setDefault(file, d?.mode ?? 'zoom');
       }));
-      defaultTile.onMode((_c, m) => { const d = normalizeDefault(store.read()); store.setDefault(d?.file ?? '', m); });
+      defaultTile.onMode((_c, m) => {
+        const d = normalizeDefault(store.read());
+        if (!d) return; // no default image yet — nothing to attach a mode to
+        store.setDefault(d.file, m);
+      });
       for (const [connector, tile] of tiles) {
         const e = entryForConnector(cfg, connector);
         if (e) tile.setEntry(e.file, e.mode, false);
         else tile.setEntry(def?.file ?? null, def?.mode ?? 'zoom', true);
       }
-      arrangement.render(model.arrange(560, 220), tiles);
+      placeTiles();
     };
 
     const rebuildAndRefresh = (): void => { rebuildTiles(); refresh(); };
     rebuildAndRefresh();
 
     store.watch(refresh);
+    arrangement.connect('notify::width', () => placeTiles());
     model.onChanged(rebuildAndRefresh);
     window.connect('notify::is-active', () => { if (window.is_active) refresh(); });
     window.connect('close-request', () => { store.stop(); model.destroy(); return false; });
 
     return Promise.resolve();
-  }
-
-  private currentFile(store: ConfigStore, connector: string): string | null {
-    return entryForConnector(store.read(), connector)?.file ?? null;
   }
 
   private currentMode(store: ConfigStore, connector: string): Mode {

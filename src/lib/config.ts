@@ -32,8 +32,8 @@ export function parseConfig(text: string): Config {
 /** Resolve the fallback default to {file, mode}; bare string -> mode zoom. */
 export function normalizeDefault(cfg: Config): Entry | null {
   const d = cfg.default;
-  if (typeof d === 'string') return { file: d, mode: 'zoom' };
-  if (d !== null && typeof d === 'object' && typeof d.file === 'string')
+  if (typeof d === 'string') return d === '' ? null : { file: d, mode: 'zoom' };
+  if (d !== null && typeof d === 'object' && typeof d.file === 'string' && d.file !== '')
     return { file: d.file, mode: normalizeMode(d.mode) };
   return null;
 }
@@ -41,7 +41,7 @@ export function normalizeDefault(cfg: Config): Entry | null {
 /** Resolve a monitor's explicit entry to {file, mode}, or null when unset. */
 export function entryForConnector(cfg: Config, connector: string): Entry | null {
   const e = cfg.monitors?.[connector];
-  if (!e || typeof e.file !== 'string') return null;
+  if (!e || typeof e.file !== 'string' || e.file === '') return null;
   return { file: e.file, mode: normalizeMode(e.mode) };
 }
 

@@ -60,3 +60,10 @@ test('setDefault: object form, preserves monitors', () => {
   assert.deepEqual(out.default, { file: '/d.jpg', mode: 'center' });
   assert.deepEqual(out.monitors!['DP-1'], { file: '/a.jpg', mode: 'zoom' });
 });
+test('entryForConnector: empty-string file -> null', () => {
+  assert.equal(entryForConnector({ monitors: { 'DP-1': { file: '', mode: 'fit' } } }, 'DP-1'), null);
+});
+test('normalizeDefault: empty-string file -> null', () => {
+  assert.equal(normalizeDefault({ default: '' }), null);
+  assert.equal(normalizeDefault({ default: { file: '', mode: 'fit' } }), null);
+});
