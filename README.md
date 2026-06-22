@@ -24,14 +24,16 @@ that, changes are live.
 {
   "default": "/path/to/wallpaper.jpg",
   "monitors": {
-    "DP-1":   { "file": "/path/to/left.jpg"  },
-    "HDMI-1": { "file": "/path/to/right.jpg" }
+    "DP-1":   { "file": "/path/to/left.jpg",  "mode": "zoom" },
+    "HDMI-1": { "file": "/path/to/right.jpg", "mode": "fit"  }
   }
 }
 ```
 
 - `default` is painted on any monitor not listed in `monitors`.
 - Keys are mutter connector names (e.g. `DP-1`, `HDMI-1`, `eDP-1`).
-- Images are always scaled `zoom` (cover/crop); scaling is not configurable.
+- `mode` controls scaling: `zoom` (cover/crop, default), `fill` (stretch), `fit` (letterbox), `center` (native resolution, centered).
+
+Open the extension's preferences to pick a wallpaper and fit-mode per monitor on a to-scale arrangement.
 
 Any tool can write this file automatically; you can also edit it by hand.

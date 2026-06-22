@@ -3,5 +3,5 @@
   "name": "Per-Monitor Wallpaper",
   "description": "Paints each monitor its own wallpaper from ~/.config/per-monitor-wallpaper/config.json. Handles rotated monitors; works where GNOME's spanned wallpaper can't tile.",
   "shell-version": ["50"],
-  "version": 2
+  "version": 3
 }
