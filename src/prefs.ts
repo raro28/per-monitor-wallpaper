@@ -69,7 +69,10 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
       const cfg = store.read();
       const def = normalizeDefault(cfg);
       defaultTile.setEntry(def?.file ?? null, def?.mode ?? 'zoom', false);
-      defaultTile.onPick(() => this.pick(window, (file) => store.setDefault(file, def?.mode ?? 'zoom')));
+      defaultTile.onPick(() => this.pick(window, (file) => {
+        const d = normalizeDefault(store.read());
+        store.setDefault(file, d?.mode ?? 'zoom');
+      }));
       defaultTile.onMode((_c, m) => { const d = normalizeDefault(store.read()); store.setDefault(d?.file ?? '', m); });
       for (const [connector, tile] of tiles) {
         const e = entryForConnector(cfg, connector);
