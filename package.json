@@ -12,10 +12,11 @@
     "test": "rm -rf .test-build && esbuild src/lib/*.test.ts --bundle --format=esm --platform=node --outdir=.test-build && node --test .test-build"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@girs/gnome-shell": "^50.0.2",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",
-    "eslint-plugin-gjs": "^1.0.4",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.61.1"
   }
 }
