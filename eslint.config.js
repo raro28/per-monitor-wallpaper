@@ -10,11 +10,12 @@ export default tseslint.config(
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
-        // GJS ambient globals used by the runtime modules.
+        // GJS ambient globals used by the runtime + prefs modules.
         log: 'readonly',
         logError: 'readonly',
         globalThis: 'readonly',
         TextDecoder: 'readonly',
+        console: 'readonly',
       },
     },
   },

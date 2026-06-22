@@ -22,7 +22,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           STAGE="per-monitor-wallpaper@ekthor"
           mkdir -p "$STAGE"
-          cp dist/extension.js dist/metadata.json LICENSE README.md "$STAGE/"
+          cp dist/extension.js dist/prefs.js dist/metadata.json LICENSE README.md "$STAGE/"
           tar czf "per-monitor-wallpaper-${VERSION}.tar.gz" "$STAGE"
       - uses: softprops/action-gh-release@v2
         with:
