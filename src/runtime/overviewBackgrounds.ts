@@ -1,5 +1,6 @@
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { fileForConnector, defaultFile } from '../lib/config.js';
+import { entryForConnector, normalizeDefault } from '../lib/config.js';
+import { modeToStyle } from '../lib/mode.js';
 import type { ConfigSource } from './configSource.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -16,7 +17,7 @@ export class OverviewBackgrounds {
 
   constructor(
     private readonly config: ConfigSource,
-    private readonly makeBackground: (file: string | null) => Any | null,
+    private readonly makeBackground: (file: string | null, style?: number) => Any | null,
   ) {}
 
   private managers(): OvManager[] {
@@ -44,14 +45,15 @@ export class OverviewBackgrounds {
     const cfg = this.config.read();
     if (!cfg) return;
     const mm = (globalThis as Any).global.backend.get_monitor_manager();
-    let file = defaultFile(cfg);
+    let entry = normalizeDefault(cfg);
     for (const connector of Object.keys(cfg.monitors ?? {})) {
       if (mm.get_monitor_for_connector(connector) === monitorIndex) {
-        file = fileForConnector(cfg, connector) ?? file;
+        entry = entryForConnector(cfg, connector) ?? entry;
         break;
       }
     }
-    const background = this.makeBackground(file);
+    if (!entry) return;
+    const background = this.makeBackground(entry.file, modeToStyle(entry.mode));
     if (background && mgr.backgroundActor) mgr.backgroundActor.content.background = background;
   }
 

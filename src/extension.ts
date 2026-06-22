@@ -17,7 +17,7 @@ export default class PerMonitorWallpaperExtension extends Extension {
   enable(): void {
     this.config = new ConfigSource();
     this.desktop = new DesktopBackgrounds(this.config);
-    this.overview = new OverviewBackgrounds(this.config, (f) => this.desktop!.makeBackground(f));
+    this.overview = new OverviewBackgrounds(this.config, (f, style) => this.desktop!.makeBackground(f, style));
     // Single shared debounce: both the config-file watch and monitors-changed coalesce
     // into one deferred apply (150 ms), matching 1.0.2's _scheduleApply.
     this.applyDebouncer = new Debouncer(() => this.desktop!.apply());
