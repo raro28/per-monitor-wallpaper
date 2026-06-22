@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  parseConfig, fileForConnector, defaultFile, normalizeDefault, entryForConnector,
+  parseConfig, normalizeDefault, entryForConnector,
   setMonitorEntry, clearMonitorEntry, setDefault,
 } from './config.js';
 
@@ -15,19 +15,6 @@ test('parseConfig: non-object JSON -> {}', () => {
   assert.deepEqual(parseConfig('[1,2]'), {});
   assert.deepEqual(parseConfig('"x"'), {});
   assert.deepEqual(parseConfig('null'), {});
-});
-test('fileForConnector: returns the entry file', () => {
-  const c = { monitors: { 'DP-1': { file: '/a.jpg', mode: 'zoom' } } };
-  assert.equal(fileForConnector(c, 'DP-1'), '/a.jpg');
-});
-test('fileForConnector: missing entry/file -> null', () => {
-  assert.equal(fileForConnector({ monitors: {} }, 'DP-1'), null);
-  assert.equal(fileForConnector({}, 'DP-1'), null);
-  assert.equal(fileForConnector({ monitors: { 'DP-1': {} } }, 'DP-1'), null);
-});
-test('defaultFile: string or null', () => {
-  assert.equal(defaultFile({ default: '/d.jpg' }), '/d.jpg');
-  assert.equal(defaultFile({}), null);
 });
 test('normalizeDefault: bare string -> mode zoom', () => {
   assert.deepEqual(normalizeDefault({ default: '/d.jpg' }), { file: '/d.jpg', mode: 'zoom' });

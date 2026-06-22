@@ -29,17 +29,6 @@ export function parseConfig(text: string): Config {
     : {};
 }
 
-/** The explicit per-connector override file, or null. (legacy; removed after migration) */
-export function fileForConnector(cfg: Config, connector: string): string | null {
-  const file = cfg.monitors?.[connector]?.file;
-  return typeof file === 'string' ? file : null;
-}
-
-/** The fallback file (legacy bare-string only), or null. (legacy; removed after migration) */
-export function defaultFile(cfg: Config): string | null {
-  return typeof cfg.default === 'string' ? cfg.default : null;
-}
-
 /** Resolve the fallback default to {file, mode}; bare string -> mode zoom. */
 export function normalizeDefault(cfg: Config): Entry | null {
   const d = cfg.default;
