@@ -9,7 +9,7 @@
     "build": "esbuild src/extension.ts --bundle --format=esm --outdir=dist '--external:gi://*' '--external:resource://*' && cp src/metadata.json dist/",
     "check": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "rm -rf .test-build && esbuild src/lib/*.test.ts --bundle --format=esm --platform=node --outdir=.test-build && node --test .test-build"
+    "test": "rm -rf .test-build && esbuild src/lib/*.test.ts --bundle --format=esm --platform=node --outdir=.test-build && node --test '.test-build/*.js'"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
