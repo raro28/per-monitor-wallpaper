@@ -3,6 +3,9 @@ import Gio from 'gi://Gio';
 import Gly from 'gi://Gly';
 import GlyGtk4 from 'gi://GlyGtk4';
 
+// GJS provides console globally; absent from lib ES2022, so declare what we use.
+declare const console: { error(...args: unknown[]): void };
+
 export class ThumbnailCache {
   private cache = new Map<string, Gdk.Texture>();
 
