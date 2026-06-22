@@ -56,6 +56,8 @@ export class DesktopBackgrounds {
 
   private setWhenLoaded(bg: AnyBg, file: string | null, epoch: number): void {
     const background = this.makeBackground(file);
+    // `!file` is a TS narrowing guard (makeBackground already returns null for a null
+    // file); it lets tsc treat `file` as string below. Do not remove.
     if (!background || !file) return;
     const assign = (): void => {
       if (epoch !== this.epoch || !bg.backgroundActor) return;

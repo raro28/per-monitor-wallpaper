@@ -56,6 +56,7 @@ export class OverviewBackgrounds {
   }
 
   private apply(): void {
+    if (!this.config.read()) return;
     for (const { mgr, monitorIndex } of this.managers()) {
       this.override(mgr, monitorIndex);
       if (!this.ovMgrSignals.has(mgr)) {
