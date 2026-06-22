@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Install the per-monitor-wallpaper@ekthor GNOME extension by symlinking (default) or
-# copying src/ into the user extensions dir, then enabling it.
+# copying dist/ (built from TypeScript) into the user extensions dir, then enabling it.
 #   install.sh            symlink + enable
 #   install.sh --copy     copy instead of symlink
 #   install.sh --uninstall  disable + remove
 set -euo pipefail
 
 UUID="per-monitor-wallpaper@ekthor"
-SRC="$(cd "$(dirname "$0")/src" && pwd)"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+SRC="$ROOT/dist"
 DEST="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions/$UUID"
 
 mode="symlink"
@@ -24,6 +25,9 @@ if [ "$mode" = "uninstall" ]; then
   echo "uninstalled $UUID"
   exit 0
 fi
+
+# Build dist/ from TypeScript before installing.
+( cd "$ROOT" && npm ci && npm run build )
 
 mkdir -p "$(dirname "$DEST")"
 rm -rf -- "$DEST"
