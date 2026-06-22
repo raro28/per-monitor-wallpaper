@@ -17,3 +17,13 @@ declare module 'gi://GlyGtk4' {
   import type { Frame } from 'gi://Gly';
   export function frame_get_texture(frame: Frame): Gdk.Texture;
 }
+
+// Ambient console for GNOME Shell extensions (available globally at runtime).
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare const console: {
+  log: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+  debug: (...args: any[]) => void;
+};
+/* eslint-enable @typescript-eslint/no-explicit-any */
