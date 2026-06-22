@@ -33,7 +33,7 @@ export class DesktopBackgrounds {
     return out;
   }
 
-  private makeBackground(file: string | null): AnyBg | null {
+  makeBackground(file: string | null): AnyBg | null {
     if (!file) return null;
     const gfile = Gio.File.new_for_path(file);
     if (!gfile.query_exists(null)) {
