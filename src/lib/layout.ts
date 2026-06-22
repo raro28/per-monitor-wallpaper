@@ -17,15 +17,18 @@ export interface Placed {
 
 export interface Arrangement {
   scale: number;
+  contentH: number; // scaled height of the arrangement; the view shrinks to this
   tiles: Placed[];
 }
 
 /**
  * Map real monitor geometries into an areaW x areaH box: translate so the
- * bounding box starts at origin, scale uniformly to fit, then center.
+ * bounding box starts at origin, scale uniformly to fit, center horizontally,
+ * and top-align vertically (the view is sized to `contentH`, so there is no
+ * vertical slack to center within).
  */
 export function computeArrangement(monitors: MonitorGeom[], areaW: number, areaH: number): Arrangement {
-  if (monitors.length === 0) return { scale: 1, tiles: [] };
+  if (monitors.length === 0) return { scale: 1, contentH: 0, tiles: [] };
 
   const minX = Math.min(...monitors.map((m) => m.geometry.x));
   const minY = Math.min(...monitors.map((m) => m.geometry.y));
@@ -36,17 +39,17 @@ export function computeArrangement(monitors: MonitorGeom[], areaW: number, areaH
 
   const scale = Math.min(areaW / bboxW, areaH / bboxH);
   const offsetX = (areaW - bboxW * scale) / 2;
-  const offsetY = (areaH - bboxH * scale) / 2;
+  const contentH = bboxH * scale;
 
   const tiles = monitors.map((m) => ({
     connector: m.connector,
     rect: {
       x: offsetX + (m.geometry.x - minX) * scale,
-      y: offsetY + (m.geometry.y - minY) * scale,
+      y: (m.geometry.y - minY) * scale,
       width: m.geometry.width * scale,
       height: m.geometry.height * scale,
     },
   }));
 
-  return { scale, tiles };
+  return { scale, contentH, tiles };
 }

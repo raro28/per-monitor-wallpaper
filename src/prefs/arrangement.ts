@@ -8,8 +8,8 @@ export const ArrangementView = GObject.registerClass(
   class extends Gtk.Fixed {
     constructor() {
       super();
-      this.set_size_request(-1, 220);
       this.set_hexpand(true);
+      // Height is set to the arrangement's content height in render() (shrink-to-fit).
     }
 
     render(arrangement: Arrangement, tiles: Map<string, MonitorTile>): void {
@@ -35,6 +35,8 @@ export const ArrangementView = GObject.registerClass(
         if (!(wanted as Set<unknown>).has(child)) this.remove(child);
         child = next;
       }
+      // Shrink the view to the arrangement's content height (no empty space below).
+      this.set_size_request(-1, Math.max(1, Math.ceil(arrangement.contentH)));
     }
   },
 );

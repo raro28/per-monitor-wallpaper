@@ -66,7 +66,9 @@ export default class PerMonitorWallpaperPrefs extends ExtensionPreferences {
 
     const placeTiles = (): void => {
       const w = arrangement.get_width() || 560; // 0 before first allocation -> fallback
-      arrangement.render(model.arrange(w, 220), tiles);
+      // Fit to width; cap the height so a tall (portrait) arrangement stays reasonable.
+      // The view then shrinks to the arrangement's actual content height.
+      arrangement.render(model.arrange(w, 280), tiles);
     };
 
     const refresh = (): void => {
