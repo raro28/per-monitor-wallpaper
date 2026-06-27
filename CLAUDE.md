@@ -10,7 +10,7 @@ The extension is a **reader**. The config is **writer-agnostic**: any tool, or t
 hand, can write it — an automated script, or a standalone GUI editor. The JSON schema is the
 interface between writers and the reader — see "Config contract".
 
-Target host: **Fedora 44, GNOME Shell 50.2, GTK 4.22**. `metadata.json` pins `shell-version`
+Target host: **Fedora 44, GNOME Shell 50.2**. `metadata.json` pins `shell-version`
 to `50`.
 
 ## Chat format
@@ -29,27 +29,24 @@ These rules bind your replies and any document you write or edit, equally.
 "Verified" means reproduced on this host, not "the build passed". A green `tsc`/`eslint`/build
 proves the bundle compiles; it proves **nothing** about runtime behavior.
 
-- `src/lib/*` (`config`, `layout`, `mode`) is **pure and node-testable** — this is the only
+- `src/lib/*` (`config`, `mode`) is **pure and node-testable** — this is the only
   code `npm test` covers. Changes here are verifiable headlessly.
-- `src/runtime/*` (shell-side) and `src/prefs/*` (GTK GUI) require a **live GNOME 50 session**.
+- `src/runtime/*` (shell-side) requires a **live GNOME 50 session**.
   They cannot be unit-tested headless. To verify them, build, install, and observe in a real
   session — on Wayland that needs one logout/login (see "Install & runtime"). Say so when a
   change to these is unverified rather than implying it was checked.
 
 ## Architecture
 
-Two esbuild entry points, three code zones:
+One esbuild entry point, two code zones:
 
 - `src/extension.ts` — runtime entry; runs **inside** gnome-shell.
-- `src/prefs.ts` — preferences entry; runs in a **separate** GTK4/Adwaita process.
-- `src/lib/` — pure, runtime-agnostic logic shared by both. Unit-tested. No `gi://` imports.
+- `src/lib/` — pure, runtime-agnostic logic (`config`, `mode`). Unit-tested. No `gi://` imports.
 - `src/runtime/` — shell-side units (`configSource`, `debouncer`, `desktopBackgrounds`,
   `loginSeed`, `overviewBackgrounds`).
-- `src/prefs/` — GTK GUI units (`arrangement`, `configStore`, `monitorModel`, `monitorTile`,
-  `thumbnailCache`). `src/types/glycin.d.ts` is prefs-only.
 
 `gi://*` and `resource://*` imports are externalized at bundle time. GJS ambient globals
-(`log`, `logError`, `console`, `TextDecoder`) are declared in `eslint.config.js`.
+(`log`, `globalThis`) are declared in `eslint.config.js`.
 
 ## Build & verify loop
 
@@ -57,11 +54,11 @@ Two esbuild entry points, three code zones:
 npm run check    # tsc --noEmit (excludes *.test.ts)
 npm run lint     # eslint src
 npm test         # esbuild src/lib/*.test.ts -> node --test
-npm run build    # esbuild extension.ts + prefs.ts -> dist/ (ESM), copies metadata.json
+npm run build    # esbuild extension.ts -> dist/ (ESM), copies metadata.json
 ```
 
 CI (`.github/workflows/release.yml`) runs check → lint → test → build on `v*` tags, then
-packages `dist/{extension.js,prefs.js,metadata.json}` + `LICENSE` + `README.md` into a tarball
+packages `dist/{extension.js,metadata.json}` + `LICENSE` + `README.md` into a tarball
 release. Keep all four green before claiming done.
 
 ## Install & runtime
@@ -115,7 +112,7 @@ applyable diff, exact `ls`/`find` results), run it via `rtk proxy <cmd>`.
 
 - Commit or push only when explicitly asked.
 - Default branch `main`; feature work on `feat/*` branches. Commits use Conventional Commits
-  with a scope: `feat(prefs):`, `fix(prefs):`, `build(prefs):`, `release(vX.Y.Z):`.
+  with a scope: `feat(runtime):`, `fix(runtime):`, `build:`, `release(vX.Y.Z):`.
 - Releases ship by pushing a `v*` tag (triggers the CI release job).
 - Post-merge cleanup only for branches you created or were asked to merge: prove merged-ness
   (branch tip is an ancestor of `main`), then delete with `git branch -d` (safe), never `-D`.
