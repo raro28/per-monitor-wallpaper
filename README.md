@@ -8,7 +8,7 @@ you by hand, can write the config.
 ## Install
 
 ```bash
-./install.sh            # symlink src/ into the extensions dir + enable
+./install.sh            # build dist/ then symlink it into the extensions dir + enable
 ./install.sh --copy     # copy instead of symlink
 ./install.sh --uninstall
 ```
@@ -34,6 +34,6 @@ that, changes are live.
 - Keys are mutter connector names (e.g. `DP-1`, `HDMI-1`, `eDP-1`).
 - `mode` controls scaling: `zoom` (cover/crop, default), `fill` (stretch), `fit` (letterbox), `center` (native resolution, centered).
 
-Open the extension's preferences to pick a wallpaper and fit-mode per monitor on a to-scale arrangement.
+Use the **Mural** app to pick a wallpaper and fit-mode per monitor on a to-scale arrangement; it writes this config.
 
 Any tool can write this file automatically; you can also edit it by hand.

@@ -1,12 +1,12 @@
 {
   "name": "per-monitor-wallpaper",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "GNOME Shell extension: per-monitor wallpaper",
   "type": "module",
   "private": true,
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "build": "esbuild src/extension.ts src/prefs.ts --bundle --format=esm --outdir=dist '--external:gi://*' '--external:resource://*' && cp src/metadata.json dist/",
+    "build": "esbuild src/extension.ts --bundle --format=esm --outdir=dist '--external:gi://*' '--external:resource://*' && cp src/metadata.json dist/",
     "check": "tsc --noEmit",
     "lint": "eslint src",
     "test": "rm -rf .test-build && esbuild src/lib/*.test.ts --bundle --format=esm --platform=node --outdir=.test-build && node --test '.test-build/*.js'"
