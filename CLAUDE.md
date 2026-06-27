@@ -32,9 +32,9 @@ proves the bundle compiles; it proves **nothing** about runtime behavior.
 - `src/lib/*` (`config`, `mode`) is **pure and node-testable** — this is the only
   code `npm test` covers. Changes here are verifiable headlessly.
 - `src/runtime/*` (shell-side) requires a **live GNOME 50 session**.
-  They cannot be unit-tested headless. To verify them, build, install, and observe in a real
+  It cannot be unit-tested headless. To verify it, build, install, and observe in a real
   session — on Wayland that needs one logout/login (see "Install & runtime"). Say so when a
-  change to these is unverified rather than implying it was checked.
+  change here is unverified rather than implying it was checked.
 
 ## Architecture
 

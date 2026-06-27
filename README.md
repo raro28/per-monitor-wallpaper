@@ -34,6 +34,6 @@ that, changes are live.
 - Keys are mutter connector names (e.g. `DP-1`, `HDMI-1`, `eDP-1`).
 - `mode` controls scaling: `zoom` (cover/crop, default), `fill` (stretch), `fit` (letterbox), `center` (native resolution, centered).
 
-Use the **Mural** app to pick a wallpaper and fit-mode per monitor on a to-scale arrangement; it writes this config. You can also edit the file by hand, or have any tool write it.
+Use the **Mural** app to pick a wallpaper and fit-mode per monitor on a to-scale arrangement; it writes this config.
 
 Any tool can write this file automatically; you can also edit it by hand.
