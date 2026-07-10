@@ -36,6 +36,27 @@ proves the bundle compiles; it proves **nothing** about runtime behavior.
   session — on Wayland that needs one logout/login (see "Install & runtime"). Say so when a
   change here is unverified rather than implying it was checked.
 
+## Debugging login-time behavior
+
+Facts established on this host (GNOME Shell 50.2); each cost a wrong hypothesis.
+
+- **Reproduce on the install path that fails.** `./install.sh` symlinks into
+  `~/.local/share`; the RPM installs to `/usr/share`. `enable()` runs at a different point
+  in shell startup for each, and login behavior differs. The v2.2.1 overview bug reproduced
+  only from `/usr/share`, never from the symlink, across repeated reboots. To debug it,
+  `sudo install` `dist/{extension.js,metadata.json}` into
+  `/usr/share/gnome-shell/extensions/per-monitor-wallpaper@ekthor/` and remove the user
+  symlink; `rpm -V` flags the overwritten files, `sudo dnf reinstall` restores them.
+- **A correct background may not be displayed.** GNOME can open the session in the overview,
+  with `global.window_group` hidden; what is on screen then is the overview's own background
+  actors, filled from `gsettings picture-uri` (one image on every monitor). Check
+  `global.window_group.visible` and `Main.overview.visible` before treating it as an assign
+  or repaint bug.
+- **`disable()` does not run at logout.** State it writes (the gsettings re-seed) does not
+  happen on the way out; the next `enable()` sees whatever was left behind.
+- **`Meta.Background` exposes no `file` through introspection** (reads back null). To tell
+  our background from GNOME's, tag the object we construct and read the tag back.
+
 ## Architecture
 
 One esbuild entry point, two code zones:
