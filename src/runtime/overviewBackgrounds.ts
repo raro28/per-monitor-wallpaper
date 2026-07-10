@@ -72,6 +72,11 @@ export class OverviewBackgrounds {
     for (const sig of ['showing', 'shown'])
       this.ovSignals.push((Main.overview as Any).connect(sig, () => this.apply()));
     this.ovSignals.push((Main.overview as Any).connect('hidden', () => this.clearManagers()));
+    // GNOME opens the session in the overview, and a system-wide extension can enable
+    // after it is already shown -- `showing`/`shown` never fire again. The desktop
+    // backgrounds are correct but window_group is hidden, so the overview's own
+    // (unoverridden) backgrounds are what the user sees at login.
+    if ((Main.overview as Any).visible) this.apply();
   }
 
   private clearManagers(): void {
