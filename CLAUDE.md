@@ -10,8 +10,9 @@ The extension is a **reader**. The config is **writer-agnostic**: any tool, or t
 hand, can write it — an automated script, or a standalone GUI editor. The JSON schema is the
 interface between writers and the reader — see "Config contract".
 
-Target host: **Fedora 44, GNOME Shell 50.2**. `metadata.json` pins `shell-version`
-to `50`.
+Target host: **Fedora 45, GNOME Shell 51**. `metadata.json` pins `shell-version`
+to `51`. (GNOME 51 removed `Meta.Background.set_file()`; backgrounds are built from a
+Glycin-decoded `CoglTexture` via `set_texture()` — see `src/runtime/texture.ts`.)
 
 ## Chat format
 
@@ -31,14 +32,15 @@ proves the bundle compiles; it proves **nothing** about runtime behavior.
 
 - `src/lib/*` (`config`, `mode`) is **pure and node-testable** — this is the only
   code `npm test` covers. Changes here are verifiable headlessly.
-- `src/runtime/*` (shell-side) requires a **live GNOME 50 session**.
+- `src/runtime/*` (shell-side) requires a **live GNOME 51 session**.
   It cannot be unit-tested headless. To verify it, build, install, and observe in a real
   session — on Wayland that needs one logout/login (see "Install & runtime"). Say so when a
   change here is unverified rather than implying it was checked.
 
 ## Debugging login-time behavior
 
-Facts established on this host (GNOME Shell 50.2); each cost a wrong hypothesis.
+Facts established on GNOME Shell 50.2 (host now on 51; these login-time behaviors
+were not re-verified on 51); each cost a wrong hypothesis.
 
 - **Reproduce on the install path that fails.** `./install.sh` symlinks into
   `~/.local/share`; the RPM installs to `/usr/share`. `enable()` runs at a different point
