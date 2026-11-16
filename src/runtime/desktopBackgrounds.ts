@@ -3,6 +3,7 @@ import Gio from 'gi://Gio';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { entryForConnector, normalizeDefault, type Config, type Entry } from '../lib/config.js';
 import { modeToStyle } from '../lib/mode.js';
+import { loadTexture } from './texture.js';
 import type { ConfigSource } from './configSource.js';
 
 // Shell-private members not in @girs public types.
@@ -11,13 +12,8 @@ type AnyBg = any;
 
 export class DesktopBackgrounds {
   private mgrSignals: Array<[AnyBg, number]> = [];
-  private epoch = 0;
 
   constructor(private readonly config: ConfigSource) {}
-
-  bumpEpoch(): void {
-    this.epoch++;
-  }
 
   private idxToEntry(cfg: Config): Record<number, Entry> {
     const mm = (globalThis as any).global.backend.get_monitor_manager();
@@ -38,8 +34,17 @@ export class DesktopBackgrounds {
       log(`per-monitor-wallpaper: file not found, skipping: ${file}`);
       return null;
     }
-    const bg = new Meta.Background({ meta_display: (globalThis as any).global.display });
-    bg.set_file(gfile, style);
+    let texture;
+    try {
+      texture = loadTexture(gfile);
+    } catch (e) {
+      log(`per-monitor-wallpaper: ${e}`);
+      return null;
+    }
+    const bg: AnyBg = new Meta.Background({ meta_display: (globalThis as any).global.display });
+    // GNOME 51: set_texture(texture, style, colorState). colorState is left null, as the
+    // shell itself does for images without embedded CICP (the common sRGB wallpaper case).
+    bg.set_texture(texture, style, null);
     return bg;
   }
 
@@ -48,29 +53,16 @@ export class DesktopBackgrounds {
     if (!cfg) return;
     const idxToEntry = this.idxToEntry(cfg);
     const def = normalizeDefault(cfg);
-    const epoch = ++this.epoch;
     for (const bg of (Main.layoutManager as AnyBg)._bgManagers)
-      this.setWhenLoaded(bg, idxToEntry[bg._monitorIndex] ?? def, epoch);
+      this.setBackground(bg, idxToEntry[bg._monitorIndex] ?? def);
   }
 
-  private setWhenLoaded(bg: AnyBg, entry: Entry | null, epoch: number): void {
+  private setBackground(bg: AnyBg, entry: Entry | null): void {
     if (!entry) return;
     const background = this.makeBackground(entry.file, modeToStyle(entry.mode));
-    if (!background) return;
-    const assign = (): void => {
-      if (epoch !== this.epoch || !bg.backgroundActor) return;
-      bg.backgroundActor.content.background = background;
-      bg.backgroundActor.show();
-    };
-    const image = Meta.BackgroundImageCache.get_default().load(Gio.File.new_for_path(entry.file));
-    if (image.is_loaded()) {
-      assign();
-    } else {
-      const id = image.connect('loaded', () => {
-        image.disconnect(id);
-        assign();
-      });
-    }
+    if (!background || !bg.backgroundActor) return;
+    bg.backgroundActor.content.background = background;
+    bg.backgroundActor.show();
   }
 
   connectManagers(): void {

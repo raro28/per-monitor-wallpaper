@@ -35,8 +35,7 @@ export default class PerMonitorWallpaperExtension extends Extension {
 
   disable(): void {
     // Order matters: disconnect every signal + stop the watch/debounce BEFORE nulling the
-    // modules below, so no `this.desktop!` lambda can fire after teardown.
-    this.desktop?.bumpEpoch();
+    // modules below, so no debounced `this.desktop!.apply()` can fire after teardown.
     if (this.layoutSig) {
       (Main.layoutManager as any).disconnect(this.layoutSig);
       this.layoutSig = 0;
