@@ -5,6 +5,7 @@ import { DesktopBackgrounds } from './runtime/desktopBackgrounds.js';
 import { OverviewBackgrounds } from './runtime/overviewBackgrounds.js';
 import { Debouncer } from './runtime/debouncer.js';
 import { seedLoginBackground } from './runtime/loginSeed.js';
+import { clearTextureCache } from './runtime/texture.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default class PerMonitorWallpaperExtension extends Extension {
@@ -50,5 +51,6 @@ export default class PerMonitorWallpaperExtension extends Extension {
     this.desktop = null;
     this.overview = null;
     this.applyDebouncer = null;
+    clearTextureCache(); // release cached GPU textures
   }
 }
