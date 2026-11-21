@@ -39,8 +39,10 @@ proves the bundle compiles; it proves **nothing** about runtime behavior.
 
 ## Debugging login-time behavior
 
-Facts established on GNOME Shell 50.2 (host now on 51; these login-time behaviors
-were not re-verified on 51); each cost a wrong hypothesis.
+Facts established while fixing the v2.2.1 overview bug on GNOME Shell 50.2. The overview
+signal names and private fields these rely on were confirmed identical on 51 by offline
+shell-JS/typelib inspection (see "Porting to a new GNOME release"); the reproduction itself
+was not re-run on 51. Each cost a wrong hypothesis.
 
 - **Reproduce on the install path that fails.** `./install.sh` symlinks into
   `~/.local/share`; the RPM installs to `/usr/share`. `enable()` runs at a different point
@@ -59,6 +61,28 @@ were not re-verified on 51); each cost a wrong hypothesis.
 - **`Meta.Background` exposes no `file` through introspection** (reads back null). To tell
   our background from GNOME's, tag the object we construct and read the tag back.
 
+## Porting to a new GNOME release
+
+The private shell API this extension reads is not in `@girs`; re-check it on each major bump.
+The surface to verify: `Main.layoutManager._bgManagers` plus each manager's
+`_monitorIndex`/`backgroundActor`; `Main.overview._overview`, its `.visible` getter and the
+`showing`/`shown`/`hidden` signal names; the overview manager path `_controls`/`.controls` →
+`_workspacesDisplay._workspacesViews` → `_workspaces` (or `_workspacesView._workspaces`, or
+`_workspace`) → `_background._bgManager`; `global.backend.get_monitor_manager()`; and the
+`Meta.Background` texture API.
+
+Verify without a live session of the new release: download (do not install) its `gnome-shell`
+and `mutter` RPMs (`dnf download --releasever=<N>`), `rpm2cpio | cpio` them, extract the shell
+JS with `objcopy -O binary --only-section=.gresource.shell_js_resources libshell-<N>.so`, load
+that blob with `Gio.Resource`, and enumerate `/org/gnome/shell/ui/*.js`; inspect the native
+`Meta` surface with `GIRepository` 3.0 against the extracted `Meta-<N>.typelib`.
+
+GNOME 51 example (the v2.3.0 port): `Meta.Background.set_file()` and `Meta.BackgroundImageCache`
+were removed; images decode in JS via Glycin to a `CoglTexture` passed to
+`set_texture(texture, style, colorState)` — see `src/runtime/texture.ts`. The `gi://Gly` typelib
+needs no explicit RPM `Requires`: the chain `gnome-shell → gtk → gdk-pixbuf2 → glycin-libs`
+guarantees it, and `gi://Gly` resolves to `Gly-2` on Fedora 45.
+
 ## Architecture
 
 One esbuild entry point, two code zones:
@@ -66,7 +90,8 @@ One esbuild entry point, two code zones:
 - `src/extension.ts` — runtime entry; runs **inside** gnome-shell.
 - `src/lib/` — pure, runtime-agnostic logic (`config`, `mode`). Unit-tested. No `gi://` imports.
 - `src/runtime/` — shell-side units (`configSource`, `debouncer`, `desktopBackgrounds`,
-  `loginSeed`, `overviewBackgrounds`).
+  `loginSeed`, `overviewBackgrounds`, `texture`). `texture.ts` decodes a file to a
+  `CoglTexture` via Glycin (`gi://Gly`); its type shim is `src/gi-gly.d.ts`.
 
 `gi://*` and `resource://*` imports are externalized at bundle time. GJS ambient globals
 (`log`, `globalThis`) are declared in `eslint.config.js`.
